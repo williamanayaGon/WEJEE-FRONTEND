@@ -421,9 +421,9 @@ const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCar
             colors={["#00ff04", "#FF9FFC", "#ffffff"]}
             animationSpeed={11}
             showBorder={false}
-            className="text-[80px] sm:text-[120px] md:text-[180px] font-black tracking-tighter leading-none mb-4"
+            className="text-[80px] sm:text-[120px] md:text-[180px] font-['Montserrat'] font-black tracking-tighter leading-none mb-4"
           >
-            WEJEEE.
+            WEJEEE
           </GradientText>
 
           <p className="text-slate-400 text-xl md:text-2xl mt-6 max-w-2xl mx-auto font-light tracking-wide">
