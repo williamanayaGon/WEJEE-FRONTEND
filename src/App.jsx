@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Menu, X, Trash2, Plus, LayoutDashboard, LogOut, Save, Lock, Upload, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Menu, X, Trash2, Plus, LayoutDashboard, LogOut, Save, Lock, Upload, ChevronRight, Info, Eye, ChevronLeft } from 'lucide-react';
 import GradientText from './GradientText';
 
 const API_URL = 'https://wejee.onrender.com/api';
@@ -54,12 +54,19 @@ const AdminPanel = ({ products, onAddProduct, onDeleteProduct, onLogout }) => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("Ropa");
-  const [file, setFile] = useState(null);
+  const [description, setDescription] = useState("");
+  const [gender, setGender] = useState("");
+  const [sizes, setSizes] = useState("");
+  const [files, setFiles] = useState([]); // Ahora es un arreglo para múltiples fotos
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !price || !file) {
-      alert("Por favor completa todos los campos e incluye una imagen");
+    if (!name || !price || files.length === 0) {
+      alert("Por favor completa el nombre, precio y al menos la primera imagen.");
+      return;
+    }
+    if (files.length > 4) {
+      alert("Solo puedes subir un máximo de 4 imágenes.");
       return;
     }
 
@@ -67,10 +74,30 @@ const AdminPanel = ({ products, onAddProduct, onDeleteProduct, onLogout }) => {
     formData.append('name', name);
     formData.append('price', price);
     formData.append('category', category);
-    formData.append('image', file);
+    formData.append('description', description);
+    formData.append('gender', gender);
+    formData.append('sizes', sizes);
+    
+    // Adjuntar todas las imágenes
+    for (let i = 0; i < files.length; i++) {
+      formData.append('images', files[i]);
+    }
 
     onAddProduct(formData);
-    setName(""); setPrice(""); setFile(null);
+    // Limpiar formulario
+    setName(""); setPrice(""); setCategory("Ropa");
+    setDescription(""); setGender(""); setSizes(""); setFiles([]);
+  };
+
+  const handleFileChange = (e) => {
+    // Convierte el FileList a un Array de JS
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length > 4) {
+      alert("Has seleccionado más de 4 fotos. Solo se guardarán las primeras 4.");
+      setFiles(selectedFiles.slice(0, 4));
+    } else {
+      setFiles(selectedFiles);
+    }
   };
 
   return (
@@ -88,42 +115,68 @@ const AdminPanel = ({ products, onAddProduct, onDeleteProduct, onLogout }) => {
           <h2 className="text-xl font-bold mb-6 text-white flex items-center gap-2 border-b border-slate-700 pb-4">
             <Plus className="text-indigo-500"/> Nuevo Producto
           </h2>
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-xs text-slate-400 font-semibold mb-1 block uppercase tracking-wider">Nombre del producto</label>
-              <input type="text" placeholder="Ej: Camiseta Oversize" className="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-indigo-500 outline-none" value={name} onChange={e => setName(e.target.value)} />
+              <input type="text" className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-indigo-500 outline-none" value={name} onChange={e => setName(e.target.value)} />
             </div>
             
-            <div>
-              <label className="text-xs text-slate-400 font-semibold mb-1 block uppercase tracking-wider">Precio ($)</label>
-              <input type="number" placeholder="Ej: 45000" className="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-indigo-500 outline-none" value={price} onChange={e => setPrice(e.target.value)} />
+            <div className="flex gap-4">
+              <div className="w-1/2">
+                <label className="text-xs text-slate-400 font-semibold mb-1 block uppercase tracking-wider">Precio ($)</label>
+                <input type="number" className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-indigo-500 outline-none" value={price} onChange={e => setPrice(e.target.value)} />
+              </div>
+              <div className="w-1/2">
+                <label className="text-xs text-slate-400 font-semibold mb-1 block uppercase tracking-wider">Categoría</label>
+                <select className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-indigo-500 outline-none" value={category} onChange={e => setCategory(e.target.value)}>
+                  <option value="Ropa">Ropa</option>
+                  <option value="Maquillaje">Maquillaje</option>
+                  <option value="Cuidado">Cuidado</option>
+                </select>
+              </div>
             </div>
-            
+
+            {/* CAMPOS NUEVOS (OPCIONALES) */}
             <div>
-              <label className="text-xs text-slate-400 font-semibold mb-1 block uppercase tracking-wider">Categoría</label>
-              <select className="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-indigo-500 outline-none" value={category} onChange={e => setCategory(e.target.value)}>
-                <option value="Ropa">Ropa</option>
-                <option value="Maquillaje">Maquillaje</option>
-                <option value="Cuidado">Cuidado Integral</option>
-              </select>
+              <label className="text-xs text-slate-400 font-semibold mb-1 block uppercase tracking-wider">Descripción (Opcional)</label>
+              <textarea placeholder="Ej: 100% Algodón, corte oversize..." className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-indigo-500 outline-none resize-none h-20" value={description} onChange={e => setDescription(e.target.value)} />
+            </div>
+
+            <div className="flex gap-4">
+              <div className="w-1/2">
+                <label className="text-xs text-slate-400 font-semibold mb-1 block uppercase tracking-wider">Género (Opcional)</label>
+                <select className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-indigo-500 outline-none" value={gender} onChange={e => setGender(e.target.value)}>
+                  <option value="">Selecciona...</option>
+                  <option value="Hombre">Hombre</option>
+                  <option value="Mujer">Mujer</option>
+                  <option value="Unisex">Unisex</option>
+                </select>
+              </div>
+              <div className="w-1/2">
+                <label className="text-xs text-slate-400 font-semibold mb-1 block uppercase tracking-wider">Tallas (Opcional)</label>
+                <input type="text" placeholder="Ej: S, M, L, XL" className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:border-indigo-500 outline-none" value={sizes} onChange={e => setSizes(e.target.value)} />
+              </div>
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 font-semibold mb-1 block uppercase tracking-wider">Imagen (Requerido)</label>
-              <div className="border-2 border-dashed border-slate-600 bg-slate-900/50 p-6 rounded-xl text-center cursor-pointer hover:border-indigo-500 hover:bg-slate-900 transition relative group">
-                <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                <div className="flex flex-col items-center text-slate-400 group-hover:text-indigo-400 transition">
-                  <Upload size={28} className="mb-2" />
-                  <span className="text-sm font-medium">{file ? file.name : "Toca para subir foto"}</span>
+              <label className="text-xs text-slate-400 font-semibold mb-1 block uppercase tracking-wider">Imágenes (Max 4)</label>
+              <div className="border-2 border-dashed border-slate-600 bg-slate-900/50 p-4 rounded-xl text-center cursor-pointer hover:border-indigo-500 transition relative">
+                {/* CAMBIO: multiple agregdo */}
+                <input type="file" multiple accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                <div className="flex flex-col items-center text-slate-400">
+                  <Upload size={24} className="mb-1" />
+                  <span className="text-sm font-medium">
+                    {files.length > 0 ? `${files.length} fotos seleccionadas` : "Sube hasta 4 fotos"}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white p-3.5 rounded-xl font-bold transition shadow-lg shadow-indigo-500/20 mt-2">Publicar Producto</button>
+            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white p-3.5 rounded-xl font-bold transition shadow-lg shadow-indigo-500/20 mt-4">Publicar Producto</button>
           </form>
         </div>
 
-        {/* Lista de Productos */}
+        {/* Lista de Productos (Igual que antes) */}
         <div className="lg:col-span-2 bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl">
           <h2 className="text-xl font-bold mb-6 text-white border-b border-slate-700 pb-4">Inventario Actual ({products.length})</h2>
           <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
@@ -158,6 +211,17 @@ const AdminPanel = ({ products, onAddProduct, onDeleteProduct, onLogout }) => {
 // --- COMPONENTE: TIENDA ---
 const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCartOpen, setIsCartOpen, removeFromCart, total, onAdminClick }) => {
   
+  // ESTADOS PARA EL MODAL DEL PRODUCTO
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  // Funciones para manejar el Modal
+  const openModal = (product) => {
+    setSelectedProduct(product);
+    setActiveImageIndex(0);
+  };
+  const closeModal = () => setSelectedProduct(null);
+
   const ProductSection = ({ title, category }) => {
     const categoryProducts = products.filter(p => p.category === category);
     if (categoryProducts.length === 0) return null;
@@ -172,14 +236,18 @@ const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCar
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {categoryProducts.map((product) => (
-              <div key={product.id} className="group bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 hover:bg-slate-800 hover:border-slate-600 transition-all duration-300">
+              <div key={product.id} className="group bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 hover:bg-slate-800 hover:border-slate-600 transition-all duration-300 cursor-pointer" onClick={() => openModal(product)}>
                 <div className="relative overflow-hidden rounded-xl bg-slate-900 mb-5 aspect-[3/4]">
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  
-                  {/* Overlay oscuro al pasar el mouse */}
                   <div className="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   
-                  <button onClick={() => addToCart(product)} className="absolute bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 hover:bg-indigo-500 flex items-center gap-2">
+                  {/* Botón ver detalles */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/80 backdrop-blur-sm text-white px-4 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-2">
+                    <Eye size={18} /> Ver Detalles
+                  </div>
+
+                  {/* Botón Añadir Rápido (previene abrir el modal) */}
+                  <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="absolute bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 hover:bg-indigo-500 flex items-center gap-2">
                     <Plus size={20} />
                   </button>
                 </div>
@@ -194,8 +262,82 @@ const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCar
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 font-sans text-slate-300 selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-slate-950 font-sans text-slate-300 selection:bg-indigo-500/30 relative">
       
+      {/* --- EL MODAL (VENTANA EMERGENTE DE DETALLES) --- */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={closeModal}></div>
+          
+          <div className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col md:flex-row shadow-2xl z-10 animate-fade-in-up">
+            <button onClick={closeModal} className="absolute top-4 right-4 z-20 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full"><X size={24}/></button>
+
+            {/* SECCIÓN DE IMÁGENES (IZQUIERDA) */}
+            <div className="md:w-1/2 flex flex-col p-6 gap-4 border-r border-slate-800">
+              {/* Imagen Principal con Zoom al pasar el mouse */}
+              <div className="relative w-full aspect-[4/5] bg-slate-950 rounded-xl overflow-hidden group cursor-crosshair">
+                 <img 
+                    src={[selectedProduct.image, selectedProduct.image2, selectedProduct.image3, selectedProduct.image4].filter(Boolean)[activeImageIndex]} 
+                    alt={selectedProduct.name} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.5]"
+                 />
+              </div>
+              
+              {/* Miniaturas */}
+              <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                {[selectedProduct.image, selectedProduct.image2, selectedProduct.image3, selectedProduct.image4].filter(Boolean).map((imgUrl, idx) => (
+                  <button key={idx} onClick={() => setActiveImageIndex(idx)} className={`flex-shrink-0 w-20 h-24 rounded-lg overflow-hidden border-2 transition-all ${activeImageIndex === idx ? 'border-indigo-500 opacity-100' : 'border-transparent opacity-50 hover:opacity-100'}`}>
+                    <img src={imgUrl} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* SECCIÓN DE INFO (DERECHA) */}
+            <div className="md:w-1/2 p-6 md:p-10 flex flex-col">
+              <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">{selectedProduct.category}</span>
+              <h2 className="text-3xl font-black text-white mb-4 leading-tight">{selectedProduct.name}</h2>
+              <p className="text-4xl font-bold text-indigo-400 mb-8">${Number(selectedProduct.price).toLocaleString()}</p>
+              
+              {/* Datos Opcionales (Solo se muestran si existen) */}
+              <div className="space-y-6 mb-10 flex-1">
+                {selectedProduct.description && (
+                  <div>
+                    <h4 className="text-slate-400 text-sm uppercase tracking-wider font-semibold mb-2">Descripción</h4>
+                    <p className="text-slate-300 leading-relaxed bg-slate-800/50 p-4 rounded-xl">{selectedProduct.description}</p>
+                  </div>
+                )}
+                
+                {(selectedProduct.sizes || selectedProduct.gender) && (
+                  <div className="flex gap-6">
+                    {selectedProduct.sizes && (
+                      <div>
+                        <h4 className="text-slate-400 text-sm uppercase tracking-wider font-semibold mb-2">Tallas</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedProduct.sizes.split(',').map((size, idx) => (
+                            <span key={idx} className="bg-slate-800 border border-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium">{size.trim()}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {selectedProduct.gender && (
+                      <div>
+                        <h4 className="text-slate-400 text-sm uppercase tracking-wider font-semibold mb-2">Género</h4>
+                        <span className="bg-slate-800 text-slate-300 px-4 py-2 rounded-lg text-sm">{selectedProduct.gender}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <button onClick={() => { addToCart(selectedProduct); closeModal(); }} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-xl font-bold text-lg transition flex justify-center items-center gap-2 shadow-lg shadow-indigo-500/20">
+                <ShoppingBag size={22} /> Añadir al Carrito
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* NAVBAR */}
       <nav className="bg-slate-950/80 backdrop-blur-xl sticky top-0 z-40 border-b border-slate-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
@@ -213,7 +355,7 @@ const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCar
         </div>
       </nav>
 
-      {/* CARRITO LATERAL (DARK MODE) */}
+      {/* CARRITO LATERAL */}
       {isCartOpen && <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 transition-opacity" onClick={() => setIsCartOpen(false)}></div>}
       <div className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-slate-900 border-l border-slate-800 z-[60] shadow-2xl transform transition-transform duration-300 ease-in-out ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full">
@@ -248,11 +390,10 @@ const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCar
                   <span className="text-3xl font-black text-white">${total.toLocaleString()}</span>
                 </div>
                 
-                {/* --- BOTÓN DE WHATSAPP ACTUALIZADO --- */}
                 <button 
                   disabled={cart.length === 0}
                   onClick={() => {
-                    const numeroWhatsApp = "573001234567"; // <-- CAMBIA ESTO POR TU NÚMERO
+                    const numeroWhatsApp = "573001234567";
                     let mensaje = `¡Hola Wejeee! 👋 Quiero comprar los siguientes productos:%0A%0A`;
                     cart.forEach((item, index) => {
                       mensaje += `${index + 1}. ${item.name} - $${Number(item.price).toLocaleString()}%0A`;
@@ -268,30 +409,26 @@ const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCar
         </div>
       </div>
 
-     {/* HEADER HERO (ELEGANTE Y TRANSLÚCIDO) */}
+     {/* HEADER HERO */}
       <header className="relative min-h-[85vh] flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 text-center overflow-hidden">
-        {/* Luces de fondo estilo neón */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px] -z-10"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-purple-600/20 rounded-full blur-[80px] -z-10"></div>
         
         <div className="max-w-5xl mx-auto z-10 flex flex-col items-center justify-center w-full">
+          <span className="text-indigo-400 font-semibold tracking-[0.2em] text-sm uppercase mb-4 block">Nueva Colección 2026</span>
           
-          <span className="text-indigo-400 font-semibold tracking-[0.2em] text-sm uppercase mb-4 block">Nueva Colección 2025</span>
-          
-          {/* AQUÍ ESTÁ EL COMPONENTE ANIMADO QUE TRAJISTE */}
           <GradientText
             colors={["#00ff04", "#FF9FFC", "#ffffff"]}
             animationSpeed={11}
             showBorder={false}
             className="text-[80px] sm:text-[120px] md:text-[180px] font-black tracking-tighter leading-none mb-4"
           >
-            WEJEEE
+            WEJEEE.
           </GradientText>
 
           <p className="text-slate-400 text-xl md:text-2xl mt-6 max-w-2xl mx-auto font-light tracking-wide">
             Moda, maquillaje y cuidado integral seleccionado exclusivamente para resaltar tu esencia.
           </p>
-
         </div>
       </header>
 
@@ -309,7 +446,7 @@ const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCar
           <p className="mb-10 text-slate-500 max-w-sm mx-auto">Elevando tu estilo todos los días. Envíos a todo el país.</p>
           
           <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-600 text-sm">© 2025 Wejeee Store. Todos los derechos reservados.</p>
+            <p className="text-slate-600 text-sm">© 2026 Wejeee Store. Todos los derechos reservados.</p>
             <button onClick={onAdminClick} className="text-slate-600 hover:text-indigo-400 flex items-center gap-1.5 text-sm font-medium transition px-3 py-1 rounded-lg hover:bg-slate-900">
               <Lock size={14} /> Acceso Administrativo
             </button>
