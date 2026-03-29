@@ -427,7 +427,7 @@ const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCar
           </GradientText>
 
           <p className="text-slate-400 text-xl md:text-2xl mt-6 max-w-2xl mx-auto font-light tracking-wide">
-            Moda, maquillaje y cuidado integral seleccionado exclusivamente para resaltar tu esencia.
+            Moda circular, maquillaje y cuidado integral seleccionado exclusivamente para resaltar tu esencia.
           </p>
         </div>
       </header>
