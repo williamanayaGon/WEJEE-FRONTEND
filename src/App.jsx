@@ -393,7 +393,7 @@ const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCar
                 <button 
                   disabled={cart.length === 0}
                   onClick={() => {
-                    const numeroWhatsApp = "573001234567";
+                    const numeroWhatsApp = "573007217820";
                     let mensaje = `¡Hola Wejeee! 👋 Quiero comprar los siguientes productos:%0A%0A`;
                     cart.forEach((item, index) => {
                       mensaje += `${index + 1}. ${item.name} - $${Number(item.price).toLocaleString()}%0A`;
