@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Menu, X, Trash2, Plus, LayoutDashboard, LogOut, Save, Lock, Upload, ChevronRight } from 'lucide-react';
+import GradientText from './GradientText';
 
 const API_URL = 'https://wejee.onrender.com/api';
 
@@ -267,21 +268,30 @@ const StoreView = ({ products, addToCart, cart, isMenuOpen, setIsMenuOpen, isCar
         </div>
       </div>
 
-      {/* HEADER HERO (ELEGANTE Y TRANSLÚCIDO) */}
-      <header className="relative py-32 px-4 sm:px-6 lg:px-8 text-center overflow-hidden">
-        {/* Círculos de luz borrosa de fondo (Efecto Glassmorphism) */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px] -z-10"></div>
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-purple-600/10 rounded-full blur-[100px] -z-10"></div>
+     {/* HEADER HERO (ELEGANTE Y TRANSLÚCIDO) */}
+      <header className="relative min-h-[85vh] flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 text-center overflow-hidden">
+        {/* Luces de fondo estilo neón */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px] -z-10"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-purple-600/20 rounded-full blur-[80px] -z-10"></div>
         
-        <div className="max-w-3xl mx-auto z-10">
+        <div className="max-w-5xl mx-auto z-10 flex flex-col items-center justify-center w-full">
+          
           <span className="text-indigo-400 font-semibold tracking-[0.2em] text-sm uppercase mb-4 block">Nueva Colección 2025</span>
-          <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight leading-tight">
-            Descubre tu <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Estilo Único.</span>
-          </h1>
-          <p className="text-slate-400 text-lg md:text-xl mb-10 max-w-xl mx-auto leading-relaxed">
+          
+          {/* AQUÍ ESTÁ EL COMPONENTE ANIMADO QUE TRAJISTE */}
+          <GradientText
+            colors={["#00ff04", "#FF9FFC", "#ffffff"]}
+            animationSpeed={11}
+            showBorder={false}
+            className="text-[80px] sm:text-[120px] md:text-[180px] font-black tracking-tighter leading-none mb-4"
+          >
+            WEJEEE
+          </GradientText>
+
+          <p className="text-slate-400 text-xl md:text-2xl mt-6 max-w-2xl mx-auto font-light tracking-wide">
             Moda, maquillaje y cuidado integral seleccionado exclusivamente para resaltar tu esencia.
           </p>
+
         </div>
       </header>
 
